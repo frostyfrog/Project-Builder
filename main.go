@@ -1,13 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"github.com/googollee/go-socket.io"
+	//	"github.com/jonathankarsh/logstreamer"
 	"log"
 	"net/http"
-//	"os"
+	"os"
 	"os/exec"
-	"fmt"
-
-	"github.com/googollee/go-socket.io"
 )
 
 // This is our "Streaming" object for streaming file writes
@@ -21,11 +21,11 @@ func (s Stream) Write(p []byte) (n int, err error) {
 	// Write to our channel
 	s.Chan <- p
 	// For Debug:
-//	n, err = os.Stdout.Write(p);
-//	os.Stdout.Sync()
-//	if err != nil {
-//		return
-//	}
+	//	n, err = os.Stdout.Write(p);
+	//	os.Stdout.Sync()
+	//	if err != nil {
+	//		return
+	//	}
 	// Return how many bytes we sent to the channel,
 	// and no error
 	n = len(p)
@@ -52,14 +52,14 @@ func socketServer() *socketio.Server {
 
 		// Create our Stream object and write the output of
 		// proc_test.sh to it.
-		s := Stream{Chan:zoink}
+		s := Stream{Chan: zoink}
 		cmd := exec.Command("./proc_test.sh")
 		cmd.Stdout = s
 		cmd.Start()
 
 		// Go routine to listen for output from the command
 		// and send it to all connected users
-		go func(){
+		go func() {
 			for {
 				tmp := fmt.Sprintf("%q", <-zoink)
 				fmt.Printf("Printed: %s\n", tmp)
@@ -90,11 +90,45 @@ func socketServer() *socketio.Server {
 	// Return the server
 	return server
 }
+
+// Error Checker
+func checkErr(e error) {
+	if e != nil {
+		logErr.Printf("An error has occured: %s", e)
+		//		logStreamerErr.Write(tmp)
+		//		logStreamerErr.Flush()
+		panic(e)
+	}
+}
+
+var logOut, logErr *log.Logger
+
+//var logStreamerOut, logStreamerErr *logstreamer.Logstreamer
+
+func setupLoggers() {
+	logOut = log.New(os.Stdout, "--> ", log.Ldate|log.Ltime)
+	logErr = log.New(os.Stderr, "##> ", log.Ldate|log.Ltime)
+	//	logStreamerOut = logstreamer.NewLogstreamer(logOut, "stdout", false)
+	//	logStreamerErr = logstreamer.NewLogstreamer(logErr, "stderr", true)
+}
+
 func main() {
+	/*
+		logStreamerErr.Write([]byte(""))
+	*/
+	setupLoggers()
+	logOut.Print("Loggers set up")
 	// Create the socket.io server and initialize it
 	server := socketServer()
+	logOut.Print("Socket.io Server Ready")
+
+	logOut.Print("Loading Config...")
+	config := SystemConfig{}
+	config.Load()
+	logOut.Print("Config Loaded")
 
 	// Set up http server and routing
+	logOut.Print("Starting Web Server")
 	http.Handle("/socket.io/", server)
 	http.Handle("/", http.FileServer(http.Dir("./asset")))
 	log.Println("Serving at localhost:5000...")

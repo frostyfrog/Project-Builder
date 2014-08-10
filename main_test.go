@@ -2,19 +2,20 @@ package main
 
 import (
 	"testing"
-//	"time"
+	//	"time"
 	"fmt"
-//	"os"
-	"os/exec"
-	"bytes"
+	//	"os"
 	"bufio"
-//	"github.com/kvz/logstreamer"
-//	"github.com/oguzbilgic/socketio"
-//	"net/http"
-//	"net/http/httptest"
-//	"net/url"
-//	"strings"
-//	sio "github.com/googollee/go-socket.io"
+	"bytes"
+	. "github.com/franela/goblin"
+	"os/exec"
+	//	"github.com/kvz/logstreamer"
+	//	"github.com/oguzbilgic/socketio"
+	//	"net/http"
+	//	"net/http/httptest"
+	//	"net/url"
+	//	"strings"
+	//	sio "github.com/googollee/go-socket.io"
 )
 
 func dotWriter(c <-chan []byte, buf *bufio.Writer) {
@@ -30,42 +31,48 @@ func dotWriter(c <-chan []byte, buf *bufio.Writer) {
 }
 
 func TestChannels(t *testing.T) {
-	cmd := exec.Command("./proc_test.sh")
-	//stdout, err := cmd.StdoutPipe()
-	Chan := make(chan []byte)
-	Chan2 := make(chan []byte)
-	var buf *bytes.Buffer = new(bytes.Buffer)
-	var buf2 *bytes.Buffer = new(bytes.Buffer)
-	go dotWriter(Chan, bufio.NewWriter(buf))
-	go dotWriter(Chan2, bufio.NewWriter(buf2))
-	sout := Stream{Chan:Chan}
-	serr := Stream{Chan:Chan2}
-	cmd.Stdout = sout
-	cmd.Stderr = serr
-	cmd.Start()
-	cmd.Wait()
-	scanner := bufio.NewReader(buf)
-text, err:=scanner.ReadString('\n')
-		if text != "1.2.3.4.5.\n" {
-			t.Error(fmt.Sprintf("Captured text doesn't match expected value: %s", text))
-		}
-	if err != nil {
-		t.Error(fmt.Sprintf("Error occurred while reading bytestring: %s", err))
-	}
-	scanner = bufio.NewReader(buf2)
-text, err=scanner.ReadString('\n')
-		if text != "1.2.\n" {
-			t.Error(fmt.Sprintf("Captured stderr text doesn't match expected value: %s", text))
-		}
-	if err != nil {
-		t.Error(fmt.Sprintf("Error occurred while reading stderr bytestring: %s", err))
-	}
-	//r := bufio.NewReader(str)
-	//line, _, err := r.ReadLine()
-	//if err != nil {
-	//	t.Error("Failed to read line")
-	//}
-	//fmt.Printf("|%s", line)
+	g := Goblin(t)
+	setupLoggers()
+	g.Describe("Channels", func() {
+		g.It("Channels should send data successfully", func() {
+			cmd := exec.Command("./proc_test.sh")
+			//stdout, err := cmd.StdoutPipe()
+			Chan := make(chan []byte)
+			Chan2 := make(chan []byte)
+			var buf *bytes.Buffer = new(bytes.Buffer)
+			var buf2 *bytes.Buffer = new(bytes.Buffer)
+			go dotWriter(Chan, bufio.NewWriter(buf))
+			go dotWriter(Chan2, bufio.NewWriter(buf2))
+			sout := Stream{Chan: Chan}
+			serr := Stream{Chan: Chan2}
+			cmd.Stdout = sout
+			cmd.Stderr = serr
+			cmd.Start()
+			cmd.Wait()
+			scanner := bufio.NewReader(buf)
+			text, err := scanner.ReadString('\n')
+			if text != "1.2.3.4.5.\n" {
+				g.Fail(fmt.Sprintf("Captured text doesn't match expected value: %s", text))
+			}
+			if err != nil {
+				g.Fail(fmt.Sprintf("Error occurred while reading bytestring: %s", err))
+			}
+			scanner = bufio.NewReader(buf2)
+			text, err = scanner.ReadString('\n')
+			if text != "1.2.\n" {
+				g.Fail(fmt.Sprintf("Captured stderr text doesn't match expected value: %s", text))
+			}
+			if err != nil {
+				g.Fail(fmt.Sprintf("Error occurred while reading stderr bytestring: %s", err))
+			}
+			//r := bufio.NewReader(str)
+			//line, _, err := r.ReadLine()
+			//if err != nil {
+			//	t.Error("Failed to read line")
+			//}
+			//fmt.Printf("|%s", line)
+		})
+	})
 }
 
 /*
