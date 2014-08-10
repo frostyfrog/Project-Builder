@@ -5,4 +5,5 @@ go:
   - tip
 
 install:
-  - github.com/franela/goblin
+  - go get github.com/franela/goblin
+  - go get -v ./...
