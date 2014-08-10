@@ -74,6 +74,20 @@ func TestChannels(t *testing.T) {
 		})
 	})
 }
+func TestMain(t *testing.T) {
+	g := Goblin(t)
+	g.Describe("Main Purpose", func() {
+		g.It("Should begin build command on cgi request")
+		g.It("Should use token system")
+		g.It("Should add to repository after completed build")
+		g.It("Should work with git hooks")
+		g.It("Should email on completed build")
+		g.It("Should create repository after done building")
+	})
+	g.Describe("Web", func() {
+		g.It("Build Status Monitor should not error on request")
+	})
+}
 
 /*
 DISABLED: until I can test socket.io
