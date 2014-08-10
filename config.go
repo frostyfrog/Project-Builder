@@ -23,7 +23,7 @@ type ProjectConfig struct {
 }
 
 type SystemConfig struct {
-	Projects []string
+	Map map[string][]interface{}
 }
 
 func (self *SystemConfig) Load() {
@@ -38,6 +38,6 @@ func (self *SystemConfig) ReadFile(path string) {
 	data, err := ioutil.ReadFile(path)
 	checkErr(err)
 
-	err = yaml.Unmarshal(data, &self)
+	err = yaml.Unmarshal(data, &self.Map)
 	checkErr(err)
 }
