@@ -31,6 +31,17 @@ func TestConfig(t *testing.T) {
  - testing
  - gopher
  - goblin`))
+			fo, err = os.Create("test_project_config.conf")
+			if err != nil { g.Fail("Unable to open config file for writing") }
+			defer fo.Close()
+			fo.Write([]byte(`Project: TestProj
+Type: git
+URL: http://github.com/frostyfrog/Project-Builder
+Scripts:
+ Build:
+  - pkgbuild
+ Package:
+  - goblin.sh`))
 		})
 		g.After(func(){
 			os.Remove("test_config.conf")

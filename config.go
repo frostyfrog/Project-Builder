@@ -15,6 +15,7 @@ const (
 
 type ProjectConfig struct {
 	Project string
+	URL string
 	Type    byte
 	Scripts struct {
 		Build   string
