@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"encoding/json"
 )
 
 // This is our "Streaming" object for streaming file writes
@@ -110,6 +111,17 @@ func setupLoggers() {
 	logErr = log.New(os.Stderr, "##> ", log.Ldate|log.Ltime)
 	//	logStreamerOut = logstreamer.NewLogstreamer(logOut, "stdout", false)
 	//	logStreamerErr = logstreamer.NewLogstreamer(logErr, "stderr", true)
+}
+
+type StatusResponse struct {
+	Status string `json:"status"`
+	Started bool `json:"started"`
+	Error string `json:"error,omitempty"`
+}
+
+func APIJobStart(w http.ResponseWriter, r *http.Request) {
+	out, _ := json.Marshal(StatusResponse{Status: "Job Started (Stubbed)", Started: true})
+	fmt.Fprintf(w, "%s", out)
 }
 
 func main() {

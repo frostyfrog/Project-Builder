@@ -9,6 +9,9 @@ import (
 	"bytes"
 	. "github.com/franela/goblin"
 	"os/exec"
+	"net/http"
+	"net/http/httptest"
+	"encoding/json"
 	//	"github.com/kvz/logstreamer"
 	//	"github.com/oguzbilgic/socketio"
 	//	"net/http"
@@ -77,7 +80,22 @@ func TestChannels(t *testing.T) {
 func TestMain(t *testing.T) {
 	g := Goblin(t)
 	g.Describe("Main Purpose", func() {
-		g.It("Should begin build command on cgi request")
+		g.It("Should begin build command on cgi request", func() {
+			req, err := http.NewRequest("GET", "http://example.com/jobs/TestProj?start", nil)
+			if err != nil { g.Fail("Unable to setup request object") }
+			w := httptest.NewRecorder()
+			APIJobStart(w, req)
+			if w.Code != 200 {
+				g.Fail("Job Runner didn't return HTTP 200")
+			}
+			var msg StatusResponse
+			err = json.Unmarshal(w.Body.Bytes(), &msg)
+			if err != nil {
+				g.Fail(fmt.Sprintf("Failed to parse JSON response: %s", err))
+			}
+			g.Assert(msg.Started).Equal(true)
+			//fmt.Printf("%d - %s", w.Code, w.Body.String())
+		})
 		g.It("Should use token system")
 		g.It("Should add to repository after completed build")
 		g.It("Should work with git hooks")
